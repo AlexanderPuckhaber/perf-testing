@@ -14,14 +14,19 @@ I want to use the `perf_event_open` API to record event counters for each "layer
 
 These files have some skeleton code I want to fill out and incorporate into onnxruntime. I think the perf event counting setup can be done once per session... like how the [builtin onnxruntime profiler](https://github.com/microsoft/onnxruntime/blob/master/onnxruntime/core/common/profiler.cc) works.
 
-In [`sequential_executor.cc`](https://github.com/microsoft/onnxruntime/blob/master/onnxruntime/core/framework/sequential_executor.cc), it would reset/start the event counters just before a layer operation function is called, and read them when that function returns.
+In [`sequential_executor.cc`](https://github.com/microsoft/onnxruntime/blob/master/onnxruntime/core/framework/sequential_executor.cc), it would reset/start the event counters just before a layer operation function is called, and read them when that function returns. 
+(We might also need to look at the 
+[parallel executor](https://github.com/microsoft/onnxruntime/blob/master/onnxruntime/core/framework/parallel_executor.cc)
+if we start working with more complex onnx models).
 
 Then, the event counter values can be passed along to the builtin onnxruntime profiler, to be saved to a json. An example of that can be found [here](https://github.com/microsoft/onnxruntime/compare/master...AlexanderPuckhaber:profiler_monotonic_clock).
 
 ### `evenodd.cc`
-Taken from a [StackOverflow post](https://bristot.me/using-perf-probe-to-measure-execution-time-of-user-space-code-on-linux/)
+Taken from a [blog post](https://bristot.me/using-perf-probe-to-measure-execution-time-of-user-space-code-on-linux/)
 
 You can read it to learn how `perf probe` works. Perf probe can set tracepoints for individual lines of code in binaries, which might be useful. Ideally, we would just have to compile onnxruntime with debug symbols *once* and then we could use lines in onnxruntime as events! Then, we might be able to use standalone code like `perf_test.cc` to setup perf with that event as the "group leader", and read out the counters when the function is called or when the function returns!
+
+We might not get the layer names though... which is why the other way might be better for investigating onnxruntime.
 
 ### `time_test.cc`
 Was just testing how to use `<time.h>` CLOCK_MONOTONIC_RAW
