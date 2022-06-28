@@ -1,6 +1,6 @@
 #include <vector>
 #include <inttypes.h>
 
-void matmul_naive(std::vector<std::vector<int>>& A, std::vector<std::vector<int>>& B, std::vector<std::vector<int>>& C);
+void matmul_naive(std::vector<std::vector<float>>& A, std::vector<std::vector<float>>& B, std::vector<std::vector<float>>& C);
 
-void init_2d_vector(std::vector<std::vector<int>>& V, int I, int J, int default_value = 0);
+void init_2d_vector(std::vector<std::vector<float>>& V, int I, int J, float default_value = 0);

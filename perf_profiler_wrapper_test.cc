@@ -16,7 +16,7 @@ int main() {
   int K = 1000;
 
   // A: (I x K)
-  std::vector<std::vector<int>> A, B, C;
+  std::vector<std::vector<float>> A, B, C;
   init_2d_vector(A, I, K, 0);
   init_2d_vector(B, K, J, 0);
   init_2d_vector(C, I, J);
