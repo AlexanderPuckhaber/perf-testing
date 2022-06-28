@@ -25,8 +25,6 @@ PerfProfiler::PerfProfiler() {
   counter_name_map[PERF_COUNT_HW_CACHE_REFERENCES] = "PERF_COUNT_HW_CACHE_REFERENCES";
   counter_name_map[PERF_COUNT_HW_CACHE_MISSES] = "PERF_COUNT_HW_CACHE_MISSES";
 
-  int num_events = counter_name_map.size();
-
   for (const auto& kv : counter_name_map) {
     perf_event_attr pea = pea_default;
     pea.config = kv.first;
@@ -52,7 +50,7 @@ void PerfProfiler::Initialize() {
     // printf("i:%d perf config id:%d %s\n", i, perf_counter_info[i].counter_idx, perf_counter_info[i].counter_name.c_str());
 
     if (i == 0) {
-      fd = syscall(__NR_perf_event_open, &perf_counter_info[i].pea, pid, cpu, -1, 0);  
+      fd = syscall(__NR_perf_event_open, &perf_counter_info[i].pea, pid, cpu, -1, 0);
       perf_counter_info[i].perf_syscall_data.fd = fd;
       ioctl(perf_counter_info[i].perf_syscall_data.fd, PERF_EVENT_IOC_ID, &id);
       perf_counter_info[i].perf_syscall_data.id = id;
@@ -64,11 +62,11 @@ void PerfProfiler::Initialize() {
       perf_counter_info[i].perf_syscall_data.id = id;
     }
 
-    if (perf_counter_info[i].perf_syscall_data.fd == -1) {
-      char buffer[ 256 ];
-      char * errorMsg = strerror_r( errno, buffer, 256 ); // GNU-specific version, Linux default
-      // printf("Error %s", errorMsg); //return value has to be used since buffer might not be modified
-    }
+    // if (perf_counter_info[i].perf_syscall_data.fd == -1) {
+    //   char buffer[ 256 ];
+    //   char * errorMsg = strerror_r( errno, buffer, 256 ); // GNU-specific version, Linux default
+    //   // printf("Error %s", errorMsg); //return value has to be used since buffer might not be modified
+    // }
 
     // printf("fd: %d id: %d\n", perf_counter_info[i].perf_syscall_data.fd, perf_counter_info[i].perf_syscall_data.id);
 
@@ -87,9 +85,19 @@ void PerfProfiler::Disable() {
   ioctl(perf_counter_info[0].perf_syscall_data.fd, PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP);
 }
 
-std::map<std::string, int> PerfProfiler::Read() {
+std::map<std::string, uint64_t> PerfProfiler::Read() {
 
-  read(perf_counter_info[0].perf_syscall_data.fd, buf, sizeof(buf));
+  int return_val = read(perf_counter_info[0].perf_syscall_data.fd, buf, sizeof(buf));
+  if (return_val == -1) {
+      char buffer[ 256 ];
+      char * errorMsg = strerror_r( errno, buffer, 256 ); // GNU-specific version, Linux default
+      std::string errorHint = "This could be an error in perf. Try running `perf stat` to make sure that, for example, "
+        "/proc/sys/kernel/perf_event_paranoid has been set correctly to 3 or lower";
+      std::string errorMsg_str = "perf error: " + std::string(errorMsg) + "\n" + errorHint + "\n";
+      std::map<std::string, uint64_t> result;
+      result[errorMsg_str] = -1;
+      return result;
+    }
   perf_read_format_t* rf = (struct perf_read_format_t*) buf;
 
   std::map<int, int> id_to_pci;
@@ -98,7 +106,7 @@ std::map<std::string, int> PerfProfiler::Read() {
     id_to_pci[perf_counter_info[i].perf_syscall_data.id] = i;
   }
 
-  std::map<std::string, int> result;
+  std::map<std::string, uint64_t> result;
 
   for (uint i = 0; i < rf->nr; i++) {
     // printf("id: %d, val: %d\n", rf->values[i].id, rf->values[i].value);
