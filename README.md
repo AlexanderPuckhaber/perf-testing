@@ -30,3 +30,6 @@ We might not get the layer names though... which is why the other way might be b
 
 ### `time_test.cc`
 Was just testing how to use `<time.h>` CLOCK_MONOTONIC_RAW
+
+### `perf_profiler_wrapper_test.cc`
+To compile: `g++ perf_profiler_wrapper_test.cc perf_profiler.cc perf_profiler.h matmul.cc matmul.h`
