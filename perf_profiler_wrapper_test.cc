@@ -25,10 +25,23 @@ int main() {
   myperf.Enable();
 
   // your test code here
-  matmul_naive(A, B, C);
+  matmul_tiled(A, B, C, 64);
 
   myperf.Disable();
   std::map<std::string, uint64_t> result_map = myperf.Read();
+
+  for (const auto& kv : result_map) {
+    printf("%s: %s\n", kv.first.c_str(), std::to_string(kv.second).c_str());
+  }
+
+  myperf.Reset();
+  myperf.Enable();
+
+  // your test code here
+  matmul_naive(A, B, C);
+
+  myperf.Disable();
+  result_map = myperf.Read();
 
   for (const auto& kv : result_map) {
     printf("%s: %s\n", kv.first.c_str(), std::to_string(kv.second).c_str());

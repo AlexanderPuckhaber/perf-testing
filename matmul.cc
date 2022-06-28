@@ -21,22 +21,23 @@ void matmul_naive(std::vector<std::vector<float>>& A, std::vector<std::vector<fl
   }
 }
 
+// https://stackoverflow.com/questions/26892504/c-performacne-analysis-of-tiled-matrix-multiplication-with-valgrind
 void matmul_tiled(std::vector<std::vector<float>>& A, std::vector<std::vector<float>>& B, std::vector<std::vector<float>>& C, int block_size) {
-  int incr = 64;
+  int incr = block_size;
   int row = C.size();
   int col = C[0].size();
   for (int i = 0; i < row; i += incr) {
     int x_lim = std::min( i + incr, row );
       for (int j = 0; j < col; j += incr) {
         int y_lim = std::min( j + incr, col );
-        C[i*col+j] = (float) 0.0;
+        C[i][j] = (float) 0.0;
         for (int k = 0; k < row; k += incr) {
           int z_lim = std::min( k + incr, row );
           for (int x = i; x < x_lim; x++) {
             for (int y = j; y < y_lim; y++) {
               for (int z = k; z < z_lim; z++) {
 
-                  C[ x * col + y ] +=  A[ x * col + z ] * B[ z * col  + y  ];
+                  C[ x ][y] +=  A[ x ][ z ] * B[ z ][ y  ];
 
               }
             } 
