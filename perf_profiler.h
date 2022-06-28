@@ -29,6 +29,16 @@ struct perf_read_format_t {
   } values[];
 };
 
+struct perf_type_config_t {
+  uint type;
+  unsigned long long config;
+
+  // needed because I want to use in a map
+  bool operator < (const perf_type_config_t ptc) const {
+    return std::tie(type, config) < std::tie(ptc.type, ptc.config);
+  }
+};
+
 struct perf_syscall_data_t {
   int fd;
   uint64_t id;

@@ -26,13 +26,14 @@ void matmul_tiled(std::vector<std::vector<float>>& A, std::vector<std::vector<fl
   int incr = block_size;
   int row = C.size();
   int col = C[0].size();
+  int K = B.size();
   for (int i = 0; i < row; i += incr) {
     int x_lim = std::min( i + incr, row );
       for (int j = 0; j < col; j += incr) {
         int y_lim = std::min( j + incr, col );
         C[i][j] = (float) 0.0;
-        for (int k = 0; k < row; k += incr) {
-          int z_lim = std::min( k + incr, row );
+        for (int k = 0; k < K; k += incr) {
+          int z_lim = std::min( k + incr, K );
           for (int x = i; x < x_lim; x++) {
             for (int y = j; y < y_lim; y++) {
               for (int z = k; z < z_lim; z++) {

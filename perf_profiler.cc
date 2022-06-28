@@ -19,18 +19,19 @@ PerfProfiler::PerfProfiler() {
 
   // Add your events here and give them readable string names
 
-  std::map<int, std::string> counter_name_map;
+  std::map<perf_type_config_t, std::string> counter_name_map;
 
-  counter_name_map[PERF_COUNT_HW_CPU_CYCLES] = "PERF_COUNT_HW_CPU_CYCLES";
-  counter_name_map[PERF_COUNT_HW_CACHE_REFERENCES] = "PERF_COUNT_HW_CACHE_REFERENCES";
-  counter_name_map[PERF_COUNT_HW_CACHE_MISSES] = "PERF_COUNT_HW_CACHE_MISSES";
+  counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES}] = "PERF_COUNT_HW_CPU_CYCLES";
+  counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES}] = "PERF_COUNT_HW_CACHE_REFERENCES";
+  counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES}] = "PERF_COUNT_HW_CACHE_MISSES";
+  counter_name_map[{PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D}] = "PERF_COUNT_HW_CACHE_L1D";
 
   for (const auto& kv : counter_name_map) {
     perf_event_attr pea = pea_default;
-    pea.config = kv.first;
+    pea.type = kv.first.type;
+    pea.config = kv.first.config;
     perf_counter_info_t pci;
     pci.pea = pea;
-    pci.counter_idx = kv.first;
     pci.counter_name = kv.second;
 
     perf_counter_info.emplace_back(pci);
@@ -47,7 +48,6 @@ void PerfProfiler::Initialize() {
 
   // printf("pci size: %d\n", perf_counter_info.size());
   for (uint i = 0; i < perf_counter_info.size(); i++) {
-    // printf("i:%d perf config id:%d %s\n", i, perf_counter_info[i].counter_idx, perf_counter_info[i].counter_name.c_str());
 
     if (i == 0) {
       fd = syscall(__NR_perf_event_open, &perf_counter_info[i].pea, pid, cpu, -1, 0);
