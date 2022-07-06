@@ -3,32 +3,37 @@ import subprocess
 import pandas as pd
 
 min_I = 8
-max_I = 12
+max_I = 9
 
 min_K = 8
-max_K = 12
+max_K = 11
 
 methods = ['tiled']
 
-block_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+# block_sizes = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+block_sizes = np.logspace(7, 9, num=9, base=2)
 
 num_samples = 1
 
-I_sizes = np.arange(min_I, max_I)
+# I_sizes = np.arange(min_I, max_I)
 
-# J_sizes = np.logspace(min_I, max_I, )
+I_sizes = np.logspace(min_I, max_I, num=9, base=2)
 
-K_sizes = np.arange(min_K, max_K)
+# K_sizes = np.arange(min_K, max_K)
+K_sizes = [1024]
 
 result_dicts = []
 
 for sample in range(num_samples):
-  for i_exp in I_sizes:
-    for k_exp in K_sizes:
+  for i in I_sizes:
+    for k in K_sizes:
       for method in methods:
         for bs in block_sizes:
-          i = 2 ** i_exp
-          k = 2 ** k_exp
+          # i = 2 ** i_exp
+          # k = 2 ** k_exp
+          i = int(i)
+          k = int(k)
+          bs = int(bs)
           print(i, k)
 
           result_dict = {}
@@ -51,4 +56,4 @@ for sample in range(num_samples):
 df = pd.DataFrame.from_records(result_dicts)
 print(df)
 
-df.to_csv('matmul_test4.csv')
+df.to_csv('matmul_test7.csv')
