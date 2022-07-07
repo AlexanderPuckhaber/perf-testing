@@ -1,6 +1,7 @@
 import numpy as np
 import subprocess
 import pandas as pd
+import random
 
 min_I = 8
 max_I = 9
@@ -11,7 +12,7 @@ max_K = 11
 methods = ['tiled']
 
 # block_sizes = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
-block_sizes = np.logspace(7, 9, num=9, base=2)
+block_sizes = np.logspace(4, 9, num=6, base=2)
 
 num_samples = 1
 
@@ -20,40 +21,58 @@ num_samples = 1
 I_sizes = np.logspace(min_I, max_I, num=9, base=2)
 
 # K_sizes = np.arange(min_K, max_K)
-K_sizes = [1024]
+K_sizes = [512]
 
 result_dicts = []
+
+params_dicts = []
 
 for sample in range(num_samples):
   for i in I_sizes:
     for k in K_sizes:
       for method in methods:
         for bs in block_sizes:
-          # i = 2 ** i_exp
-          # k = 2 ** k_exp
-          i = int(i)
-          k = int(k)
-          bs = int(bs)
-          print(i, k)
+          new_param = {}
+          new_param['sample'] = int(sample)
+          new_param['i'] = int(i)
+          new_param['j'] = int(i)
+          new_param['k'] = int(k)
+          new_param['method'] = method
+          new_param['bs'] = int(bs)
+          params_dicts.append(new_param)
 
-          result_dict = {}
-          result_dict['sample'] = sample
-          result_dict['i'] = i
-          result_dict['j'] = i
-          result_dict['k'] = k
-          result_dict['m'] = method
-          result_dict['bs'] = bs
+random.shuffle(params_dicts)
 
-          output = subprocess.check_output(['./a.out -i {0} -j {1} -k {2} -m {3} -b {4}'.format(i, i, k, method, bs)], shell=True, text=True)
+for param_dict in params_dicts:
+  sample = param_dict['sample']
+  i = param_dict['i']
+  j = param_dict['j']
+  k = param_dict['k']
+  method = param_dict['method']
+  bs = param_dict['bs']
 
-          for line in output.splitlines():
-            output_sliced = line.split(':')
-            result_dict[output_sliced[0].strip()] = int(output_sliced[1].strip())
-          
-          print(result_dict)
-          result_dicts.append(result_dict)
+  # print(i, k)
+
+  result_dict = {}
+  result_dict['sample'] = sample
+  result_dict['i'] = i
+  result_dict['j'] = i
+  result_dict['k'] = k
+  result_dict['m'] = method
+  result_dict['bs'] = bs
+
+  output = subprocess.check_output(['./a.out -i {0} -j {1} -k {2} -m {3} -b {4}'.format(i, i, k, method, bs)], shell=True, text=True)
+
+  for line in output.splitlines():
+    output_sliced = line.split(':')
+    result_dict[output_sliced[0].strip()] = int(output_sliced[1].strip())
+  
+  # print(result_dict)
+  result_dicts.append(result_dict)
+
+  print(len(result_dicts), '/', len(params_dicts))          
 
 df = pd.DataFrame.from_records(result_dicts)
 print(df)
 
-df.to_csv('matmul_test7.csv')
+df.to_csv('matmul_test13.csv')

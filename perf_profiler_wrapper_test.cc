@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   myperf.Initialize();
 
   // A: (I x K)
-  std::vector<std::vector<float>> A, B, C;
+  std::vector<float> A, B, C;
   init_2d_vector(A, I, K, 0);
   init_2d_vector(B, K, J, 0);
   init_2d_vector(C, I, J);
@@ -54,9 +54,9 @@ int main(int argc, char *argv[]) {
 
   // your test code here
   if (method_name == "naive") {
-    matmul_naive(A, B, C);
+    // matmul_naive(A, B, C);
   } else if (method_name == "tiled") {
-    matmul_tiled(A, B, C, bs);
+    matmul_tiled(A, B, C, I, J, K, bs);
   } else {
     printf("Invalid method name: %s\n", method_name.c_str());
     return -1;

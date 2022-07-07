@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include <perfmon/pfmlib.h>
+#include <perfmon/pfmlib_perf_event.h>
 
 // define format perf records to
 struct perf_read_format_t {

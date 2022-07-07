@@ -23,8 +23,36 @@ PerfProfiler::PerfProfiler() {
 
   counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES}] = "PERF_COUNT_HW_CPU_CYCLES";
   counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES}] = "PERF_COUNT_HW_CACHE_REFERENCES";
-  counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES}] = "PERF_COUNT_HW_CACHE_MISSES";
+  // counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES}] = "PERF_COUNT_HW_CACHE_MISSES";
+  // counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS}] = "PERF_COUNT_HW_INSTRUCTIONS";
+  counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS}] = "PERF_COUNT_HW_BRANCH_INSTRUCTIONS";
+  // counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES}] = "PERF_COUNT_HW_BRANCH_MISSES";
   counter_name_map[{PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D}] = "PERF_COUNT_HW_CACHE_L1D";
+  counter_name_map[{PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS}] = "PERF_COUNT_SW_PAGE_FAULTS";
+
+
+  // http://perfmon2.sourceforge.net/manv4/libpfm.html
+  // https://perfmon-events.intel.com/
+  // http://www.bnikolic.co.uk/blog/hpc-prof-events.html
+  // https://hadibrais.wordpress.com/2019/09/06/the-linux-perf-event-scheduling-algorithm/
+  pfm_initialize();
+
+  std::vector<std::string> raw_event_names = {"L2_RQSTS:REFERENCES", "L2_RQSTS:MISS"};
+  raw_event_names.clear();
+  pfm_pmu_encode_arg_t e;
+  pfm_err_t pfm_err;
+  uint64_t code;
+
+  for (const auto& str : raw_event_names) {
+    pfm_err = pfm_get_os_event_encoding(str.c_str(), PFM_PLM0|PFM_PLM3, PFM_OS_NONE, &e);
+    if (pfm_err < 0) {
+      printf("pfm_err: %d\n", pfm_err);
+    } else {
+      code = e.codes[0];  // assuming we can just pick the first code in the array
+      // printf("found %s code: 0x%x\n", str.c_str(), code);
+      counter_name_map[{PERF_TYPE_RAW, code}] = str.c_str();
+    }
+  }  
 
   for (const auto& kv : counter_name_map) {
     perf_event_attr pea = pea_default;
@@ -62,13 +90,13 @@ void PerfProfiler::Initialize() {
       perf_counter_info[i].perf_syscall_data.id = id;
     }
 
-    // if (perf_counter_info[i].perf_syscall_data.fd == -1) {
-    //   char buffer[ 256 ];
-    //   char * errorMsg = strerror_r( errno, buffer, 256 ); // GNU-specific version, Linux default
-    //   // printf("Error %s", errorMsg); //return value has to be used since buffer might not be modified
-    // }
+    if (perf_counter_info[i].perf_syscall_data.fd == -1) {
+      char buffer[ 256 ];
+      char * errorMsg = strerror_r( errno, buffer, 256 ); // GNU-specific version, Linux default
+      printf("Error %s", errorMsg); //return value has to be used since buffer might not be modified
+    }
 
-    // printf("fd: %d id: %d\n", perf_counter_info[i].perf_syscall_data.fd, perf_counter_info[i].perf_syscall_data.id);
+    printf("fd: %d id: %d\n", perf_counter_info[i].perf_syscall_data.fd, perf_counter_info[i].perf_syscall_data.id);
 
   }
 }
