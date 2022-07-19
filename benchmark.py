@@ -12,13 +12,13 @@ max_K = 11
 methods = ['tiled']
 
 # block_sizes = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
-block_sizes = np.logspace(4, 9, num=6, base=2)
+block_sizes = np.logspace(4, 9, num=24, base=2)
 
-num_samples = 1
+num_samples = 4
 
 # I_sizes = np.arange(min_I, max_I)
 
-I_sizes = np.logspace(min_I, max_I, num=9, base=2)
+I_sizes = np.logspace(min_I, max_I, num=2, base=2)
 
 # K_sizes = np.arange(min_K, max_K)
 K_sizes = [512]
@@ -61,11 +61,12 @@ for param_dict in params_dicts:
   result_dict['m'] = method
   result_dict['bs'] = bs
 
-  output = subprocess.check_output(['./a.out -i {0} -j {1} -k {2} -m {3} -b {4}'.format(i, i, k, method, bs)], shell=True, text=True)
+  output = subprocess.check_output(['./perf_profiler_wrapper_test -i {0} -j {1} -k {2} -m {3} -b {4}'.format(i, i, k, method, bs)], shell=True, text=True)
 
   for line in output.splitlines():
+    print(line)
     output_sliced = line.split(':')
-    result_dict[output_sliced[0].strip()] = int(output_sliced[1].strip())
+    result_dict[output_sliced[-2].strip()] = int(output_sliced[-1].strip())
   
   # print(result_dict)
   result_dicts.append(result_dict)
@@ -75,4 +76,4 @@ for param_dict in params_dicts:
 df = pd.DataFrame.from_records(result_dicts)
 print(df)
 
-df.to_csv('matmul_test13.csv')
+df.to_csv('matmul_test14.csv')

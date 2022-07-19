@@ -25,10 +25,14 @@ PerfProfiler::PerfProfiler() {
   counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES}] = "PERF_COUNT_HW_CACHE_REFERENCES";
   // counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES}] = "PERF_COUNT_HW_CACHE_MISSES";
   // counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS}] = "PERF_COUNT_HW_INSTRUCTIONS";
-  counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS}] = "PERF_COUNT_HW_BRANCH_INSTRUCTIONS";
+  // counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS}] = "PERF_COUNT_HW_BRANCH_INSTRUCTIONS";
   // counter_name_map[{PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES}] = "PERF_COUNT_HW_BRANCH_MISSES";
-  counter_name_map[{PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D}] = "PERF_COUNT_HW_CACHE_L1D";
-  counter_name_map[{PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS}] = "PERF_COUNT_SW_PAGE_FAULTS";
+  // counter_name_map[{PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_L1D}] = "PERF_COUNT_HW_CACHE_L1D";
+  // counter_name_map[{PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS}] = "PERF_COUNT_SW_PAGE_FAULTS";
+
+  // https://stackoverflow.com/questions/61190033/how-to-measure-the-dtlb-hits-and-dtlb-misses-with-perf-event-open
+  counter_name_map[{PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_DTLB <<  0 | PERF_COUNT_HW_CACHE_OP_READ <<  8 | PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16}] = "PERF_COUNT_HW_CACHE_DTLB:ACCESSES";
+  counter_name_map[{PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_DTLB <<  0 | PERF_COUNT_HW_CACHE_OP_READ <<  8 | PERF_COUNT_HW_CACHE_RESULT_MISS << 16}] = "PERF_COUNT_HW_CACHE_DTLB:MISSES";
 
 
   // http://perfmon2.sourceforge.net/manv4/libpfm.html
@@ -37,19 +41,22 @@ PerfProfiler::PerfProfiler() {
   // https://hadibrais.wordpress.com/2019/09/06/the-linux-perf-event-scheduling-algorithm/
   pfm_initialize();
 
-  std::vector<std::string> raw_event_names = {"L2_RQSTS:REFERENCES", "L2_RQSTS:MISS"};
+  std::vector<std::string> raw_event_names = {"L2_RQSTS", "DTLB-LOADS", "DTLB-LOAD-MISSES"};
   raw_event_names.clear();
   pfm_pmu_encode_arg_t e;
   pfm_err_t pfm_err;
   uint64_t code;
 
   for (const auto& str : raw_event_names) {
-    pfm_err = pfm_get_os_event_encoding(str.c_str(), PFM_PLM0|PFM_PLM3, PFM_OS_NONE, &e);
-    if (pfm_err < 0) {
-      printf("pfm_err: %d\n", pfm_err);
+    pfm_err = pfm_get_os_event_encoding(str.c_str(), PFM_PLM0|PFM_PLM3|PFM_PLMH, PFM_OS_NONE, &e);
+    if (pfm_err != 0) {
+      printf("pfm_err: %d from \"%s\"\n", pfm_err, str.c_str());
     } else {
+      pfm_event_info_t pei;
+      int pfm_err = pfm_get_event_info(e.idx, PFM_OS_NONE, &pei);
+      // printf("name: %s code: 0x%x\n", pei.name, pei.code);
       code = e.codes[0];  // assuming we can just pick the first code in the array
-      // printf("found %s code: 0x%x\n", str.c_str(), code);
+      // printf("found %s code: 0x%x count:%d\n", str.c_str(), code, e.count);
       counter_name_map[{PERF_TYPE_RAW, code}] = str.c_str();
     }
   }  
@@ -61,7 +68,7 @@ PerfProfiler::PerfProfiler() {
     perf_counter_info_t pci;
     pci.pea = pea;
     pci.counter_name = kv.second;
-
+    // printf("counter name map: %s type: %d config: 0x%x\n", pci.counter_name.c_str(), pea.type, pea.config);
     perf_counter_info.emplace_back(pci);
   }
 }
@@ -96,7 +103,7 @@ void PerfProfiler::Initialize() {
       printf("Error %s", errorMsg); //return value has to be used since buffer might not be modified
     }
 
-    printf("fd: %d id: %d\n", perf_counter_info[i].perf_syscall_data.fd, perf_counter_info[i].perf_syscall_data.id);
+    // printf("fd: %d id: %d\n", perf_counter_info[i].perf_syscall_data.fd, perf_counter_info[i].perf_syscall_data.id);
 
   }
 }
