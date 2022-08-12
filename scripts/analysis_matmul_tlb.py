@@ -5,8 +5,9 @@ from torch import rand; sns.set_theme()
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, Normalize
 import numpy as np
+from matplotlib.ticker import FormatStrFormatter
 
-csv_filepath = os.path.join('..', 'data', 'tlb_test4.csv')
+csv_filepath = os.path.join('..', 'data', 'mlcommons_targets.csv')
 
 df = pd.read_csv(csv_filepath)
 
@@ -25,14 +26,17 @@ subplot_fields = []
 # subplot_fields.append(['DTLB_MISS_RATIO', 'L1_DCACHE_MISS_RATIO', 'L2_RQSTS:DEMAND_DATA_RD_MISS_RATIO', 'PERF_COUNT_HW_CACHE_LL:READ:MISS_RATIO'])
 # subplot_fields.append(['DTLB-LL_MISS_RATIO_RATIO', 'DTLB-MISSES/LL-MISSES'])
 
-for randomize in [0]:
+for k in [1]:
 
 
-  df_filtered = df[(df['r'] == randomize)]
+  # df_filtered = df[(df['k'] == k)]
+  df_filtered = df
 
   # df_filtered = df[(df['c'] == 'LL') & (df['r'] == 0)]
 
-  df_filtered = df_filtered.groupby(['m', 's'], as_index=False).mean()
+  df_averaged = df_filtered.groupby(['i', 'j', 'k', 'm', 'bs'], as_index=False).mean()
+
+  # df_filtered = df_averaged
 
 
   labels = ['resnet50', 'ssd-resnet34', 'ssd-mobilenet']
@@ -54,14 +58,24 @@ for randomize in [0]:
   x = list(df_filtered[x_l]) + list(target_dtlb_ll[x_l])
   y = list(df_filtered[y_l]) + list(target_dtlb_ll[y_l])
 
+  print(x)
+
   colormap = np.empty((data_len + target_data_len,), dtype=object)
   alphamap = np.ones_like(colormap) * 0.5
   edgecolors = np.empty_like(colormap, dtype=object)
-  color_on = 's'
-  colormap[:data_len] = np.log2(df_filtered[color_on])
-  colormap[data_len:] = np.average(df_filtered[color_on])
-  print('min:', np.min(colormap))
-  colormap -= np.min(colormap)
+  # color_on = 'bs'
+  # colormap[:data_len] = np.log2(df_filtered[color_on])
+  colormap[:data_len] = 'black'
+  resnet50_ind = df_filtered.index[(df_filtered['i'] == 32)].to_list()
+  resnet34_ind = df_filtered.index[(df_filtered['i'] == 23)].to_list()
+  mobilenet_ind = df_filtered.index[(df_filtered['i'] == 28)].to_list()
+  colormap[resnet50_ind] = 'red'
+  colormap[resnet34_ind] = 'green'
+  colormap[mobilenet_ind] = 'blue'
+  # colormap[df_filtered['i'] == 32]
+  colormap[data_len:] = ['red', 'green', 'blue']
+  # print('min:', np.min(colormap))
+  # colormap -= np.min(colormap)
   alphamap[data_len:] = 1
   edgecolors[:data_len] = 'red'
   edgecolors[data_len:] = 'black'
@@ -69,11 +83,11 @@ for randomize in [0]:
 
   fig = plt.figure()
   ax = plt.gca()
-  ax.scatter(x, y, c=colormap, alpha=alphamap, edgecolors='none', cmap='viridis')
+  ax.scatter(x, y, c=colormap, alpha=alphamap, edgecolor='black', cmap='viridis')
   ax.set_yscale('log')
   ax.set_xscale('log')
   ax.set_xlabel(x_l)
-  ax.set_ylabel(y_l)
+  ax.set_ylabel('LL_MISS_RATIO')
   for index, row in target_dtlb_ll.iterrows():
     x, y = (row[x_l], row[y_l])
     label_point = (x, y)
@@ -82,8 +96,8 @@ for randomize in [0]:
 
     # find closest point
     dist_name = 'dist_{}'.format(row['label'])
-    df_filtered[dist_name] = np.sqrt((x - df_filtered[x_l])**2 + (y - df_filtered[y_l])**2)
-    print(df_filtered.sort_values(by=dist_name)[['m', 's', 'n', 'r', dist_name]])
+    df_averaged[dist_name] = np.sqrt((x - df_averaged[x_l])**2 + (y - df_averaged[y_l])**2)
+    print(df_averaged.sort_values(by=dist_name)[['i', 'j', 'k', 'bs', x_l, y_l, dist_name]])
 
 
   plt.show()
@@ -101,7 +115,7 @@ for randomize in [0]:
       i += 1
 
     fig.subplots_adjust(hspace=0.41)
-    fig.suptitle("Randomize: {0}".format(randomize))
+    # fig.suptitle("Randomize: {0}".format(randomize))
 
     plt.show()
 
