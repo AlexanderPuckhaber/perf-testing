@@ -5,13 +5,13 @@ import random
 import os
 import copy
 
-csv_filename = os.path.join('..', 'data', 'matmul_runner_test.csv')
+csv_filename = os.path.join('..', 'data', 'matmul_runner_test_large_bs.csv')
 
-I_sizes = [8]
+I_sizes = [64]
 
 K_sizes = [1024*64]
 
-block_sizes = [64]
+block_sizes = [1024*8]
 
 methods = ['tiled']
 
@@ -46,21 +46,6 @@ for sample in range(num_samples):
 random.shuffle(params_dicts)
 
 results_processed_dicts = []
-
-rename_events = {
-  "L1-DCACHE-LOADS": 'L1-dcache-loads',
-  "L1-DCACHE-LOAD-MISSES": 'L1-dcache-load-misses',
-  "PERF_COUNT_HW_CACHE_LL:READ:ACCESS": "cache-references",
-  "PERF_COUNT_HW_CACHE_LL:READ:MISS": 'cache-misses',
-  "perf::PERF_COUNT_HW_CACHE_DTLB:READ:ACCESS": 'L1-dcache-loads',
-  "perf::PERF_COUNT_HW_CACHE_DTLB:READ:MISS": 'dTLB-load-misses', 
-  "perf::PERF_COUNT_HW_CPU_CYCLES": 'cycles',
-  "perf::PERF_COUNT_SW_CONTEXT_SWITCHES": 'context-switches',
-  "perf::PERF_COUNT_SW_PAGE_FAULTS": 'page-faults',
-  "perf::PERF_COUNT_HW_INSTRUCTIONS": 'instructions',
-  "perf::PERF_COUNT_HW_BRANCH_INSTRUCTIONS": 'branches',
-  "perf::PERF_COUNT_HW_BRANCH_MISSES": 'branch-misses'
-}
 
 for param_dict in params_dicts:
   sample = param_dict['sample']
