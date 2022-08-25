@@ -55,8 +55,8 @@ struct perf_counter_info_t {
 
 class PerfProfiler {
   public:
-    PerfProfiler(std::map<perf_type_config_t, std::string> *perf_counter_name_map, std::vector<std::string> *search_perf_event_names, perf_event_attr *perf_event_attribute_default);
-    PerfProfiler(std::vector<std::string> *search_perf_event_names, perf_event_attr *perf_event_attribute_default = NULL) : PerfProfiler(NULL, search_perf_event_names, perf_event_attribute_default) {};
+    PerfProfiler(std::map<perf_type_config_t, std::string> *perf_counter_name_map, std::map<std::string, std::string> *search_perf_event_rename, perf_event_attr *perf_event_attribute_default);
+    PerfProfiler(std::map<std::string, std::string> *search_perf_event_rename, perf_event_attr *perf_event_attribute_default = NULL) : PerfProfiler(NULL, search_perf_event_rename, perf_event_attribute_default) {};
     // ~PerfProfiler();
 
     std::vector<perf_counter_info_t> perf_counter_info;

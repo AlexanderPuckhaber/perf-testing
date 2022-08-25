@@ -1,6 +1,9 @@
+PERFMON_INCLUDE_DIR = /usr/local/include
+PERFMON_LIB_DIR = /usr/local/lib
+
+include config.mk
+
 PERF_SRCS= perf_profiler.cc perf_profiler.h
-PERFMON_INCLUDE_DIR = /home/apuckhaber3/git/libpfm4/local_install/include
-PERFMON_LIB_DIR = /home/apuckhaber3/git/libpfm4/local_install/lib
 
 all: perf-matmul-test perf-tlb-test perf-matmul-runner
 

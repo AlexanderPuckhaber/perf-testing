@@ -10,10 +10,10 @@
 //   PerfProfiler(&counter_name_map, search_perf_event_names, perf_event_attribute_default);
 // }
 
-PerfProfiler::PerfProfiler(std::map<perf_type_config_t, std::string> *perf_counter_name_map, std::vector<std::string> *search_perf_event_names, perf_event_attr *perf_event_attribute_default) {
+PerfProfiler::PerfProfiler(std::map<perf_type_config_t, std::string> *perf_counter_name_map, std::map<std::string, std::string> *search_perf_event_rename, perf_event_attr *perf_event_attribute_default) {
   perf_event_attr pea_default;
   std::map<perf_type_config_t, std::string> counter_name_map;
-  std::vector<std::string> raw_event_names; // = {"L2_RQSTS", "DTLB-LOADS", "DTLB-LOAD-MISSES"};
+  std::map<std::string, std::string> raw_event_rename; // = {"L2_RQSTS", "DTLB-LOADS", "DTLB-LOAD-MISSES"};
   int ret;
 
   if (perf_event_attribute_default == NULL) {
@@ -33,8 +33,8 @@ PerfProfiler::PerfProfiler(std::map<perf_type_config_t, std::string> *perf_count
     counter_name_map = *perf_counter_name_map;
   }
 
-  if (search_perf_event_names != NULL) {
-    raw_event_names = *search_perf_event_names;
+  if (search_perf_event_rename != NULL) {
+    raw_event_rename = *search_perf_event_rename;
   }
 
   // printf("counter_name_map size: %d raw_event_names size: %d\n", counter_name_map.size(), raw_event_names.size());
@@ -78,11 +78,15 @@ PerfProfiler::PerfProfiler(std::map<perf_type_config_t, std::string> *perf_count
   unsigned long long config;
   std::string event_name;
 
-  for (const auto& str : raw_event_names) {
-    ret = pfm_get_os_event_encoding(str.c_str(), PFM_PLM0|PFM_PLM3, PFM_OS_PERF_EVENT_EXT, &e);
+  std::string raw_event_name, raw_event_alias;
+
+  for (const auto& kv : raw_event_rename) {
+    raw_event_name = kv.first;
+    raw_event_alias = kv.second;
+    ret = pfm_get_os_event_encoding(raw_event_name.c_str(), PFM_PLM0|PFM_PLM3, PFM_OS_PERF_EVENT_EXT, &e);
     // ret = pfm_get_perf_event_encoding(str.c_str(), PFM_PLM0|PFM_PLM3|PFM_PLMH, &pea, fstr, idx);
     if (ret != PFM_SUCCESS) {
-      printf("pfm_get_os_event_encoding err: %s from \"%s\"\n", pfm_strerror(ret), str.c_str());
+      printf("pfm_get_os_event_encoding err: %s from \"%s\"\n", pfm_strerror(ret), raw_event_name.c_str());
     } else {
       // printf("actual event: %s\n", *e.fstr);
       type = e.attr->type;
@@ -98,7 +102,11 @@ PerfProfiler::PerfProfiler(std::map<perf_type_config_t, std::string> *perf_count
       // }
       // printf("str: %s name: %s type: %d config: 0x%x\n", str.c_str(), event_name.c_str(), type, config);
       // counter_name_map[{type, config}] = std::string(*e.fstr);
-      counter_name_map[{type, config}] = str;
+      if (raw_event_rename.empty()) {
+        counter_name_map[{type, config}] = raw_event_name;
+      } else {
+        counter_name_map[{type, config}] = raw_event_alias;
+      }
     }
   }  
 

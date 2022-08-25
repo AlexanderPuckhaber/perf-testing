@@ -1,13 +1,23 @@
 #include "get_perf_configs.h"
 
-std::vector<std::string> common_sw_counters = {"perf::PERF_COUNT_SW_PAGE_FAULTS", "perf::PERF_COUNT_SW_CONTEXT_SWITCHES"};
+std::map<std::string, std::string> common_sw_counters = {
+  {"perf::PERF_COUNT_SW_PAGE_FAULTS", "page-faults"}, 
+  {"perf::PERF_COUNT_SW_CONTEXT_SWITCHES", "context-switches"},
+  {"perf::PERF_COUNT_SW_CPU_MIGRATIONS", "cpu-migrations"},
+  {"perf::PERF_COUNT_SW_TASK_CLOCK", "task-clock"}
+};
 
 PerfProfiler CFG_L1_LL() {
   std::map<perf_type_config_t, std::string> counter_name_map;
-  std::vector<std::string> event_list;
+  std::map<std::string, std::string> event_list;
 
-  event_list = {"L1-DCACHE-LOADS", "L1-DCACHE-LOAD-MISSES", "PERF_COUNT_HW_CACHE_LL:READ:ACCESS", "PERF_COUNT_HW_CACHE_LL:READ:MISS"};
-  event_list.insert(std::end(event_list), std::begin(common_sw_counters), std::end(common_sw_counters));
+  event_list = {
+    {"L1-DCACHE-LOADS", "L1-dcache-loads"}, 
+    {"L1-DCACHE-LOAD-MISSES", "L1-dcache-load-misses"},
+    {"PERF_COUNT_HW_CACHE_LL:READ:ACCESS", "cache-references"},
+    {"PERF_COUNT_HW_CACHE_LL:READ:MISS", "cache-misses"}
+  };
+  event_list.insert(std::begin(common_sw_counters), std::end(common_sw_counters));
 
   PerfProfiler myperf(&counter_name_map, &event_list, NULL);
 
@@ -16,10 +26,14 @@ PerfProfiler CFG_L1_LL() {
 
 PerfProfiler CFG_BRANCHES() {
   std::map<perf_type_config_t, std::string> counter_name_map;
-  std::vector<std::string> event_list;
+  std::map<std::string, std::string> event_list;
 
-  event_list = {"perf::PERF_COUNT_HW_INSTRUCTIONS", "perf::PERF_COUNT_HW_BRANCH_INSTRUCTIONS", "perf::PERF_COUNT_HW_BRANCH_MISSES"};
-  event_list.insert(std::end(event_list), std::begin(common_sw_counters), std::end(common_sw_counters));
+  event_list = {
+    {"perf::PERF_COUNT_HW_INSTRUCTIONS", "instructions"}, 
+    {"perf::PERF_COUNT_HW_BRANCH_INSTRUCTIONS", "branches"},
+    {"perf::PERF_COUNT_HW_BRANCH_MISSES", "branch-misses"}
+  };
+  event_list.insert(std::begin(common_sw_counters), std::end(common_sw_counters));
 
   PerfProfiler myperf(&counter_name_map, &event_list, NULL);
 
@@ -28,10 +42,14 @@ PerfProfiler CFG_BRANCHES() {
 
 PerfProfiler CFG_CYCLES_TLB() {
   std::map<perf_type_config_t, std::string> counter_name_map;
-  std::vector<std::string> event_list;
+  std::map<std::string, std::string> event_list;
 
-  event_list = {"perf::PERF_COUNT_HW_CPU_CYCLES", "perf::PERF_COUNT_HW_CACHE_DTLB:READ:ACCESS", "perf::PERF_COUNT_HW_CACHE_DTLB:READ:MISS"};
-  event_list.insert(std::end(event_list), std::begin(common_sw_counters), std::end(common_sw_counters));
+  event_list = {
+    {"perf::PERF_COUNT_HW_CPU_CYCLES", "cycles"},
+    {"perf::PERF_COUNT_HW_CACHE_DTLB:READ:ACCESS", "L1-dcache-loads"},
+    {"perf::PERF_COUNT_HW_CACHE_DTLB:READ:MISS", "dTLB-load-misses"}
+  };
+  event_list.insert(std::begin(common_sw_counters), std::end(common_sw_counters));
 
   PerfProfiler myperf(&counter_name_map, &event_list, NULL);
 

@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-csv_filepath = os.path.join('..', 'data', 'matmul_runner_test.csv')
+csv_filepath = os.path.join('..', 'data', 'alex_laptop_vs_hummer_matmul_32x.csv')
 
 df = pd.read_csv(csv_filepath)
 
@@ -13,7 +13,7 @@ df['hue'] = df['arg.profile'] + ' ' + df['hardware']
 
 hue_order = []
 
-for model in ['resnet50-onnxruntime', 'ssd-mobilenet-onnxruntime', 'ssd-resnet34-onnxruntime']:
+for model in ['resnet50-onnxruntime', 'ssd-mobilenet-onnxruntime', 'ssd-resnet34-onnxruntime', 'matmul']:
   for hardware in ['alex laptop', 'hummer']:
     hue_order.append(model + ' ' + hardware)
 
