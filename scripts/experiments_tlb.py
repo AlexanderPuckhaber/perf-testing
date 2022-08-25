@@ -4,15 +4,21 @@ import pandas as pd
 import random
 import os
 
-csv_filename = os.path.join('..', 'data', 'tlb_test_5.csv')
+csv_filename = os.path.join('..', 'data', 'tlb_test_rnet50.csv')
 
 map_sizes = np.logspace(12, 26, num=15, base=2)
-stride_sizes = np.logspace(6, 13, num=8, base=2)
+map_sizes = np.logspace(20, 26, num=15, base=2)
+# map_sizes = [65536]
+# stride_sizes = np.logspace(6, 13, num=8, base=2)
+# stride_sizes = [128, 256, 512, 1024, 2048]
+stride_sizes = [64, 256]
 access_counts = [1000 * 1000]
-randomize_settings = [0, 1]
+randomize_settings = [0]
+# randomize_settings = [1]
 cache_levels = ['L1', 'L2', 'LL']
+cache_levels = ['LL']
 
-num_samples = 16
+num_samples = 16 * 2
 
 result_dicts = []
 
