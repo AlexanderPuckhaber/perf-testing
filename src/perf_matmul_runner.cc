@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
         // fall through
       default:
         printf("Help: multiply matrices: A (I x K), B (K x J) to output C (I x J).\n"
-          "usage: -i I -j J -k K -m METHOD (naive, tiled) -b BLOCK_SIZE\n");
+          "usage: -i I -j J -k K -m METHOD {naive, tiled} -b BLOCK_SIZE -p {CFG_L1_LL, CFG_BRANCHES, CFG_CYCLES_TLB}\n");
         return -1;
     }
   }

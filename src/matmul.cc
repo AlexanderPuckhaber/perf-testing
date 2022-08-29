@@ -23,18 +23,18 @@ void matmul_tiled(std::vector<float>& A, std::vector<float>& B, std::vector<floa
   int incr = block_size;
   int row = I;
   int col = J;
-  for (int i = 0; i < row; i += incr) {
-    int x_lim = std::min( i + incr, row );
-      for (int j = 0; j < col; j += incr) {
-        int y_lim = std::min( j + incr, col );
-        C[i*col + j] = (float) 0.0;
-        for (int k = 0; k < K; k += incr) {
-          int z_lim = std::min( k + incr, K );
-          for (int x = i; x < x_lim; x++) {
-            for (int y = j; y < y_lim; y++) {
-              for (int z = k; z < z_lim; z++) {
+  for (int row_start = 0; row_start < row; row_start += incr) {
+    int row_lim = std::min( row_start + incr, row );    
+      for (int col_start = 0; col_start < col; col_start += incr) {
+        int col_lim = std::min( col_start + incr, col );
+        for (int k_start = 0; k_start < K; k_start += incr) {
+          int k_lim = std::min( k_start + incr, K );
+          for (int block_row = row_start; block_row < row_lim; block_row ++) {
+            for (int block_col = col_start; block_col < col_lim; block_col ++) {
 
-                  C[x*col + y] +=  A[ x*col + z ] * B[ z*col + y  ];
+              for (int block_k = k_start; block_k < k_lim; block_k ++) {
+
+                  C[block_col*row + block_row] +=  A[ block_k*row + block_row ] * B[ block_col*K + block_k ];
 
               }
             } 

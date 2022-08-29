@@ -56,6 +56,23 @@ PerfProfiler CFG_CYCLES_TLB() {
   return myperf;
 }
 
+PerfProfiler CFG_ll_TLB() {
+  std::map<perf_type_config_t, std::string> counter_name_map;
+  std::map<std::string, std::string> event_list;
+
+  event_list = {
+    {"PERF_COUNT_HW_CACHE_LL:READ:ACCESS", "cache-references"},
+    {"PERF_COUNT_HW_CACHE_LL:READ:MISS", "cache-misses"},
+    {"perf::PERF_COUNT_HW_CACHE_DTLB:READ:ACCESS", "L1-dcache-loads"},
+    {"perf::PERF_COUNT_HW_CACHE_DTLB:READ:MISS", "dTLB-load-misses"}
+  };
+  event_list.insert(std::begin(common_sw_counters), std::end(common_sw_counters));
+
+  PerfProfiler myperf(&counter_name_map, &event_list, NULL);
+
+  return myperf;
+}
+
 PerfProfiler get_perf_config(std::string counter_group) {
   if (counter_group == "CFG_L1_LL") {
     return CFG_L1_LL();
@@ -63,6 +80,8 @@ PerfProfiler get_perf_config(std::string counter_group) {
     return CFG_BRANCHES();
   } else if (counter_group == "CFG_CYCLES_TLB") {
     return CFG_CYCLES_TLB();
+  } else if (counter_group == "CFG_LL_TLB") {
+    return CFG_ll_TLB();
   } else {
     return NULL;
   }
