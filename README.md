@@ -57,7 +57,7 @@ Output binaries are in `bin/`
 - Output: `PerfProfiler::Read()` for a hardcoded list of counters found in `perf_matmul_test.cc`
 - Counters are only enabled during the tiled matrix multiplication (not for the array initializations)
 - Tiled works but naiive is broken. Just choose a really big tiling factor to get close to naiive implementation.
-### `perf_tlb_test`
+### `perf_tlb_test` (currently needs to be fixed due to change with my perf wrapper)
 From [https://github.com/torvalds/test-tlb](https://github.com/torvalds/test-tlb)
 - Program allocates memory "map" for a given `mapsize`, then makes `num_accesses` reads at every memory location in the map offset by `stride`, either sequentially or in randomized order.
 - `make perf-tlb-test` --> `/bin/perf_tlb_test`

@@ -7,7 +7,7 @@ PERF_SRCS= perf_profiler.cc perf_profiler.h
 
 all: perf-matmul-test perf-tlb-test perf-matmul-runner
 
-MATMUL_TEST_SRCS = $(PERF_SRCS) perf_matmul_test.cc matmul.cc matmul.h
+MATMUL_TEST_SRCS = $(PERF_SRCS) perf_matmul_test.cc matmul.cc matmul.h get_perf_configs.cc get_perf_configs.h
 perf-matmul-test: $(MATMUL_TEST_SRCS)
 	g++ -Wall -I /usr/local/include -L /usr/local/lib $(MATMUL_TEST_SRCS) -o ../bin/perf_matmul_test -g -l:libpfm.a
 

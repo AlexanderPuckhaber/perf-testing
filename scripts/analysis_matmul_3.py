@@ -116,7 +116,6 @@ keys = ['L1-dcache-loads', 'L1-dcache-load-misses', 'dTLB-load-misses', 'cache-r
 df_sel = df_pivot[('mean', )][keys + ['instructions']]
 df_sel.reset_index(inplace=True)
 for key in keys:
-  pass
   df_sel["{}_normalized".format(key)] = df_sel[key] / df_sel['L1-dcache-loads']
 print(df_sel)
 # df_sel.drop('instructions', axis=1, inplace=True)

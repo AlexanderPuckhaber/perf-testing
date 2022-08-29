@@ -1,4 +1,4 @@
-#include "perf_profiler.h"
+#include "get_perf_configs.h"
 #include "matmul.h"
 #include <stdarg.h>
 #include <unistd.h>
@@ -50,12 +50,12 @@ int main(int argc, char *argv[]) {
   // counter_name_map[{PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS}] = "PERF_COUNT_SW_PAGE_FAULTS";
 
   std::vector<std::string> event_list;
-  event_list = {"PERF_COUNT_HW_CACHE_LL:READ:ACCESS", "PERF_COUNT_HW_CACHE_LL:READ:MISS", "DTLB-LOADS", "DTLB-LOAD-MISSES"};
+  // event_list = {"PERF_COUNT_HW_CACHE_LL:READ:ACCESS", "PERF_COUNT_HW_CACHE_LL:READ:MISS", "DTLB-LOADS", "DTLB-LOAD-MISSES"};
 
 
 
 
-  PerfProfiler myperf(&counter_name_map, &event_list, NULL);
+  PerfProfiler myperf = get_perf_config("CFG_LL_TLB");
 
   myperf.Initialize();
 
