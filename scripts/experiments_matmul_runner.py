@@ -5,73 +5,72 @@ import random
 import os
 import copy
 
-csv_filename = os.path.join('..', 'data', 'matmul_runner_test_fixed2.csv')
+csv_filename = os.path.join('..', 'data', 'matmul_row_col_runner_test_fixed_surface9.csv')
 
-def calculate_matrix_computations(I, J, K):
-  matrix_computations = (I*J) * (K*K)
-  # print(I, J, K, matrix_computations)
-  return matrix_computations
+# I_sizes = [1024]
+I_sizes = np.logspace(1, 24, num=24*2 - 1, base=2)
 
-I_sizes = [1024]
-I_sizes = np.logspace(1, 24, num=24, base=2)
+# J_sizes = [4096]
+J_sizes = np.logspace(1, 24, num=24*2 - 1, base=2)
 
-J_sizes = [4096]
-J_sizes = np.logspace(1, 24, num=24, base=2)
+# K_sizes = [1024]
+K_sizes = np.logspace(1, 24, num=24*2 - 1, base=2)
 
-K_sizes = [1024]
-K_sizes = np.logspace(1, 24, num=24, base=2)
-
-# block_sizes = [64]
-block_sizes = np.logspace(6, 16, num=11, base=2)
+block_sizes = [1024]
+# block_sizes = np.logspace(6, 16, num=11, base=2)
 
 methods = ['tiled']
 
-# perf_configs = ['CFG_L1_LL', 'CFG_BRANCHES', 'CFG_CYCLES_TLB']
-perf_configs = ['CFG_LL_TLB']
+perf_configs = ['CFG_L1_LL', 'CFG_BRANCHES', 'CFG_CYCLES_TLB']
+# perf_configs = ['CFG_LL_TLB']
 
 num_samples = 4
 
-matrix_computations_limit = 1024*1024
-
-# limit_space = 100
+matrix_computations_target = 1024*1024*8*2
 
 
 result_dicts = []
 
 params_dicts = []
 
-for perf_config in perf_configs:
-  for i in I_sizes:
-    for j in J_sizes:
-      for k in K_sizes:
-        matrix_computations = calculate_matrix_computations(i, j, k)
-        print(matrix_computations, matrix_computations_limit)
-        for method in methods:
-          for bs in block_sizes:
-            if calculate_matrix_computations(i, j, k) > matrix_computations_limit:
-              pass
-              # print('over limit of:', matrix_computations_limit)
-            else:
-              new_param = {}
-              new_param['i'] = int(i)
-              new_param['j'] = int(j)
-              new_param['k'] = int(k)
-              new_param['method'] = method
-              new_param['bs'] = int(bs)
-              new_param['p'] = perf_config
-              params_dicts.append(new_param)
+
+for i in I_sizes:
+  for j in J_sizes:
+    k = int(matrix_computations_target / (i * j * 2))
+    print(i, j, k)
+    if k != 0:
+    # for k in K_sizes:
+      # matrix_computations = calculate_matrix_computations(i, j, k)
+      # if are_matrix_computations_near_target(matrix_computations, matrix_computations_target, 0.2):
+      for method in methods:
+        for bs in block_sizes:
+          new_param = {}
+          new_param['i'] = int(i)
+          new_param['j'] = int(j)
+          new_param['k'] = int(k)
+          new_param['method'] = method
+          new_param['bs'] = int(bs)
+          params_dicts.append(new_param)
 
 random.shuffle(params_dicts)
+
+print('unique combos:', len(params_dicts))
+
+# params_dicts = params_dicts[:100]
+
+print(len(params_dicts))
 
 new_param_dicts = []
 
 # duplicate for more samples
 for param_dict in params_dicts:
-  for sample in range(num_samples):
-    new_param_dict = copy.copy(param_dict)
-    new_param_dict['sample'] = sample
-    new_param_dicts.append(new_param_dict)
-    print(new_param_dict)
+  for perf_config in perf_configs:
+    for sample in range(num_samples):
+      new_param_dict = copy.copy(param_dict)
+      new_param_dict['sample'] = sample
+      new_param_dict['p'] = perf_config
+      new_param_dicts.append(new_param_dict)
+      # print(new_param_dict)
 
 random.shuffle(new_param_dicts)
 params_dicts = new_param_dicts
@@ -100,7 +99,9 @@ for param_dict in params_dicts:
 
   param_dict_lines = []
 
-  output = subprocess.check_output(['../bin/perf_matmul_runner -i {0} -j {1} -k {2} -m {3} -b {4} -p {5}'.format(i, j, k, method, bs, perf_config)], shell=True, text=True)
+  # print(a)
+
+  output = subprocess.check_output(['../bin/perf_matmul_row_col_runner -i {0} -j {1} -k {2} -m {3} -b {4} -p {5}'.format(i, j, k, method, bs, perf_config)], shell=True, text=True)
 
   for line in output.splitlines():
     # print(line)

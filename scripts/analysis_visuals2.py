@@ -4,20 +4,9 @@ import seaborn as sns
 from torch import rand; sns.set_theme()
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, Normalize
-import numpy as np
-from scipy.interpolate import RBFInterpolator
-from sklearn.linear_model import SGDRegressor
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.gaussian_process import GaussianProcessRegressor
+import numpy as n
+import sklearn.metrics
 
-from scipy.optimize import dual_annealing
-from sklearn.metrics import mean_absolute_percentage_error
-
-from simanneal import Annealer
-import time
-import scipy.stats as ss
 
 csv_filepath = os.path.join('..', 'data', 'matmul_test10.csv')
 
@@ -75,22 +64,21 @@ df = df.groupby(['i', 'bs'], as_index=False).mean()
 # p = ax.scatter(*coords_test.T, c=data_test, vmin=0, vmax=5668997)
 # plt.show()
 
-target = np.array([7886603512,9136773,84221244])
+mean_abs_per_err = []
+msle_err = []
 
-target_coco300 = [1178625931, 25829768.33, 108443104.3]
+hh = df_sel[['CACHE_ACCESS_PER_L1D', 'CACHE_MISS_PER_L1D', 'DTLB_MISS_PER_L1D']].to_numpy()
 
-target = target_coco300
-
-losses = []
-
-hh = df[['PERF_COUNT_HW_CACHE_L1D', 'PERF_COUNT_HW_CACHE_MISSES', 'PERF_COUNT_HW_CACHE_REFERENCES']].to_numpy()
+target_resnet50_alex_laptop = [0.0620, 0.0202, 0.000206]
 
 for i in range(0, hh.shape[0]):
-  l = mean_absolute_percentage_error(target, hh[i])
-  losses.append(l)
+  mape = sklearn.metrics.mean_absolute_percentage_error(target_resnet50_alex_laptop, hh[i])
+  mean_abs_per_err.append(mape)
+  msle = sklearn.metrics.mean_squared_log_error(target_resnet50_alex_laptop, hh[i])
+  msle_err.append(msle)
 
-df['loss'] = losses
-
+df_sel['mean_absolute_percentage_error'] = mean_abs_per_err
+df_sel['mean_squared_log_error'] = msle_err
 print(df)
 print(target)
 

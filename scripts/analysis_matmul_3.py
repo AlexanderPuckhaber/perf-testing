@@ -17,6 +17,8 @@ addtl_laptop_data_filepaths.append(os.path.join('..', 'data', 'matmul_runner_tes
 # addtl_laptop_data_filepaths.append(os.path.join('..', 'data', 'matmul_runner_test_3.csv'))
 # addtl_laptop_data_filepaths.append(os.path.join('..', 'data', 'matmul_runner_test_4.csv'))
 
+# addtl_laptop_data_filepaths.append(os.path.join('..', 'data', 'matmul_runner_test_hummer_large_bs.csv'))
+
 for laptop_data_filepath in addtl_laptop_data_filepaths:
   addtl_laptop_data_df = pd.read_csv(laptop_data_filepath)
   addtl_laptop_data_df['count'] = addtl_laptop_data_df['count'].astype(float)
@@ -44,8 +46,8 @@ df['hue'] = df['arg.profile'] + ' ' + df['hardware']
 
 hue_order = []
 
-# model_names = ['resnet50-onnxruntime', 'ssd-mobilenet-onnxruntime', 'ssd-resnet34-onnxruntime']
-model_names = ['resnet50-onnxruntime']
+model_names = ['resnet50-onnxruntime', 'ssd-mobilenet-onnxruntime', 'ssd-resnet34-onnxruntime']
+# model_names = ['resnet50-onnxruntime']
 model_names = model_names + addtl_laptop_data_filepaths
 
 for model in model_names:

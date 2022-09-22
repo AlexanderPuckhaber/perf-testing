@@ -7,19 +7,34 @@ import numpy as np
 from sklearn.metrics import mean_absolute_percentage_error
 import sklearn.metrics
 
-csv_filepath = os.path.join('..', 'data', 'matmul_runner_test_fixed_surface.csv')
+csv_filepath = os.path.join('..', 'data', 'matmul_row_col_runner_test_fixed_surface9.csv')
+csv_filepath = os.path.join('..', 'data', 'matmul_runner_test_fixed_surface8.csv')
 
 df = pd.read_csv(csv_filepath)
-
 
 
 df_pivot = df.pivot_table(index=['i', 'j', 'k', 'bs'], columns='event', values='count', aggfunc=[np.mean])
 print(df_pivot)
 
+
+
 df_sel = df_pivot[('mean', )]
 
 print(df_sel)
+
+# print(df[(df['i'] == 2) & (df['j'] == 37419)])
+
+# df_filtered = df_sel.groupby(['i', 'j', 'k', 'bs'], as_index=True).mean()
+# print(df_filtered)
+# print(a)
+
+print(df_sel)
 df_sel.reset_index(inplace=True)
+
+print(df_sel['i'])
+
+df_sel['est_mem_loads'] = (df_sel['i'] * df_sel['j']) * (df_sel['k'] * 2)
+df_sel['L1-dcache-loads-per-est_mem_loads'] = df_sel['L1-dcache-loads'] / df_sel['est_mem_loads']
 
 df_sel['CACHE_MISS_PER_L1D'] = (df_sel['cache-misses'] / df_sel['L1-dcache-loads'])
 df_sel['CACHE_ACCESS_PER_L1D'] = (df_sel['cache-references'] / df_sel['L1-dcache-loads'])
@@ -55,7 +70,7 @@ print(df)
 
 K = 16
 
-matmul_description = "MatMul Operation: IxI <= IxK * KxI, K={0}".format(K)
+matmul_description = "MatMul Operation: IxJ <= IxK * KxJ, bs=?"
 
 
 # df_filtered = df_sel[(df_sel['k'] == K) & (df_sel['bs'] == 64)]
@@ -90,6 +105,34 @@ df_filtered = df_filtered.groupby(['i', 'j'], as_index=False).mean()
 # ax.set_ylabel('I')
 # ax.set_title('LLC Cache Miss Ratio' + '\n' + matmul_description)
 # plt.show()
+
+df_select = df_filtered.pivot('i', 'j', 'k')
+ax = sns.heatmap(df_select, cmap='YlGnBu', norm=LogNorm())
+ax.set_xlabel('J')
+ax.set_ylabel('I')
+ax.set_title('K' + '\n' + matmul_description)
+plt.show()
+
+df_select = df_filtered.pivot('i', 'j', 'est_mem_loads')
+ax = sns.heatmap(df_select, cmap='YlGnBu')
+ax.set_xlabel('J')
+ax.set_ylabel('I')
+ax.set_title('est_mem_loads' + '\n' + matmul_description)
+plt.show()
+
+df_select = df_filtered.pivot('i', 'j', 'L1-dcache-loads')
+ax = sns.heatmap(df_select, cmap='YlGnBu')
+ax.set_xlabel('J')
+ax.set_ylabel('I')
+ax.set_title('L1-dcache-loads' + '\n' + matmul_description)
+plt.show()
+
+df_select = df_filtered.pivot('i', 'j', 'L1-dcache-loads-per-est_mem_loads')
+ax = sns.heatmap(df_select, cmap='YlGnBu')
+ax.set_xlabel('J')
+ax.set_ylabel('I')
+ax.set_title('L1-dcache-loads-per-est_mem_loads' + '\n' + matmul_description)
+plt.show()
 
 df_select = df_filtered.pivot('i', 'j', 'CACHE_MISS_PER_L1D')
 ax = sns.heatmap(df_select, cmap='YlGnBu')
@@ -135,62 +178,62 @@ plt.show()
 # plt.show()
 
 
-matmul_description = ""
+# matmul_description = ""
 
 
-# df_filtered = df_sel[(df_sel['i'] == 64) & (df_sel['bs'] == 64)]
+# # df_filtered = df_sel[(df_sel['i'] == 64) & (df_sel['bs'] == 64)]
 
-df_filtered = df_filtered.groupby(['j', 'k'], as_index=False).mean()
+# df_filtered = df_filtered.groupby(['j', 'k'], as_index=False).mean()
 
-df_select = df_filtered.pivot('j', 'k', 'CACHE_MISS_PER_L1D')
-ax = sns.heatmap(df_select, cmap='YlGnBu')
-ax.set_xlabel('J')
-ax.set_ylabel('K')
-ax.set_title('CACHE_MISS_PER_L1D' + '\n' + matmul_description)
-plt.show()
+# df_select = df_filtered.pivot('j', 'k', 'CACHE_MISS_PER_L1D')
+# ax = sns.heatmap(df_select, cmap='YlGnBu')
+# ax.set_xlabel('J')
+# ax.set_ylabel('K')
+# ax.set_title('CACHE_MISS_PER_L1D' + '\n' + matmul_description)
+# plt.show()
 
-df_select = df_filtered.pivot('j', 'k', 'CACHE_ACCESS_PER_L1D')
-ax = sns.heatmap(df_select, cmap='YlGnBu')
-ax.set_xlabel('J')
-ax.set_ylabel('K')
-ax.set_title('CACHE_ACCESS_PER_L1D' + '\n' + matmul_description)
-plt.show()
+# df_select = df_filtered.pivot('j', 'k', 'CACHE_ACCESS_PER_L1D')
+# ax = sns.heatmap(df_select, cmap='YlGnBu')
+# ax.set_xlabel('J')
+# ax.set_ylabel('K')
+# ax.set_title('CACHE_ACCESS_PER_L1D' + '\n' + matmul_description)
+# plt.show()
 
-df_select = df_filtered.pivot('j', 'k', 'DTLB_MISS_PER_L1D')
-ax = sns.heatmap(df_select, cmap='YlGnBu')
-ax.set_xlabel('J')
-ax.set_ylabel('K')
-ax.set_title('DTLB_MISS_PER_L1D' + '\n' + matmul_description)
-plt.show()
-
-
+# df_select = df_filtered.pivot('j', 'k', 'DTLB_MISS_PER_L1D')
+# ax = sns.heatmap(df_select, cmap='YlGnBu')
+# ax.set_xlabel('J')
+# ax.set_ylabel('K')
+# ax.set_title('DTLB_MISS_PER_L1D' + '\n' + matmul_description)
+# plt.show()
 
 
-matmul_description = ""
 
 
-df_filtered = df_sel[(df_sel['i'] == 64) & (df_sel['k'] == 64)]
+# matmul_description = ""
 
-df_filtered = df_filtered.groupby(['j', 'bs'], as_index=False).mean()
 
-df_select = df_filtered.pivot('j', 'bs', 'CACHE_MISS_PER_L1D')
-print(df_select)
-ax = sns.heatmap(df_select, cmap='YlGnBu')
-ax.set_xlabel('J')
-ax.set_ylabel('bs')
-ax.set_title('CACHE_MISS_PER_L1D' + '\n' + matmul_description)
-plt.show()
+# df_filtered = df_sel[(df_sel['i'] == 64) & (df_sel['k'] == 64)]
 
-df_select = df_filtered.pivot('j', 'bs', 'CACHE_ACCESS_PER_L1D')
-ax = sns.heatmap(df_select, cmap='YlGnBu')
-ax.set_xlabel('J')
-ax.set_ylabel('bs')
-ax.set_title('CACHE_ACCESS_PER_L1D' + '\n' + matmul_description)
-plt.show()
+# df_filtered = df_filtered.groupby(['j', 'bs'], as_index=False).mean()
 
-df_select = df_filtered.pivot('j', 'bs', 'DTLB_MISS_PER_L1D')
-ax = sns.heatmap(df_select, cmap='YlGnBu')
-ax.set_xlabel('J')
-ax.set_ylabel('bs')
-ax.set_title('DTLB_MISS_PER_L1D' + '\n' + matmul_description)
-plt.show()
+# df_select = df_filtered.pivot('j', 'bs', 'CACHE_MISS_PER_L1D')
+# print(df_select)
+# ax = sns.heatmap(df_select, cmap='YlGnBu')
+# ax.set_xlabel('bs')
+# ax.set_ylabel('J')
+# ax.set_title('CACHE_MISS_PER_L1D' + '\n' + matmul_description)
+# plt.show()
+
+# df_select = df_filtered.pivot('j', 'bs', 'CACHE_ACCESS_PER_L1D')
+# ax = sns.heatmap(df_select, cmap='YlGnBu')
+# ax.set_xlabel('bs')
+# ax.set_ylabel('J')
+# ax.set_title('CACHE_ACCESS_PER_L1D' + '\n' + matmul_description)
+# plt.show()
+
+# df_select = df_filtered.pivot('j', 'bs', 'DTLB_MISS_PER_L1D')
+# ax = sns.heatmap(df_select, cmap='YlGnBu')
+# ax.set_xlabel('bs')
+# ax.set_ylabel('J')
+# ax.set_title('DTLB_MISS_PER_L1D' + '\n' + matmul_description)
+# plt.show()
