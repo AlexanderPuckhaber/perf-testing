@@ -62,7 +62,8 @@ void matmul_tiled_tlb(std::vector<float>& A, std::vector<float>& B, std::vector<
 
                 
 
-                int A_index = A_index_lut[block_k*row + block_row];
+                // int A_index = A_index_lut[block_k*row + block_row];
+                int A_index = A_index_lut[block_row*K + block_k];
                 int B_index = B_index_lut[block_col*K + block_k];
                 // printf("%x\n", A_index);
 
