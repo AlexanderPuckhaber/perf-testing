@@ -15,9 +15,13 @@ MATMUL_RUNNER_SRCS = $(PERF_SRCS) perf_matmul_runner.cc matmul.cc matmul.h get_p
 perf-matmul-runner: $(MATMUL_RUNNER_SRCS)
 	g++ -Wall -I $(PERFMON_INCLUDE_DIR) -L $(PERFMON_LIB_DIR) $(MATMUL_RUNNER_SRCS) -o ../bin/perf_matmul_runner -g -l:libpfm.a
 
-MATMUL_TLB_RUNNER_SRCS = $(PERF_SRCS) perf_matmul_tlb_runner.cc matmul.cc matmul.h get_perf_configs.cc get_perf_configs.h
+MATMUL_TLB_RUNNER_SRCS = $(PERF_SRCS) perf_matmul_tlb_runner.cc matmul.cc matmul.h get_perf_configs.cc get_perf_configs.h mappings.h mappings.cc
 perf-matmul-tlb-runner: $(MATMUL_TLB_RUNNER_SRCS)
 	g++ -Wall -I $(PERFMON_INCLUDE_DIR) -L $(PERFMON_LIB_DIR) $(MATMUL_TLB_RUNNER_SRCS) -o ../bin/perf_matmul_tlb_runner -g -l:libpfm.a
+
+MATMUL_SPARSE_TLB_RUNNER_SRCS = $(PERF_SRCS) perf_matmul_sparse_tlb_runner.cc matmul.cc matmul.h get_perf_configs.cc get_perf_configs.h mappings.h mappings.cc
+perf-matmul-sparse-tlb-runner: $(MATMUL_TLB_SPARSE_RUNNER_SRCS)
+	g++ -Wall -I $(PERFMON_INCLUDE_DIR) -L $(PERFMON_LIB_DIR) $(MATMUL_SPARSE_TLB_RUNNER_SRCS) -o ../bin/perf_matmul_sparse_tlb_runner -g -l:libpfm.a
 
 TLB_TEST_SRCS = $(PERF_SRCS) perf_tlb_test.cc tlb_test.cc tlb_test.h
 perf-tlb-test: $(TLB_TEST_SRCS)

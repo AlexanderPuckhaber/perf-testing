@@ -49,6 +49,7 @@ void matmul_tiled_tlb(std::vector<float>& A, std::vector<float>& B, std::vector<
   int incr = block_size;
   int row = I;
   int col = J;
+  int A_index, B_index;
   for (int row_start = 0; row_start < row; row_start += incr) {
     int row_lim = std::min( row_start + incr, row );    
       for (int col_start = 0; col_start < col; col_start += incr) {
@@ -62,10 +63,11 @@ void matmul_tiled_tlb(std::vector<float>& A, std::vector<float>& B, std::vector<
 
                 
 
-                // int A_index = A_index_lut[block_k*row + block_row];
-                int A_index = A_index_lut[block_row*K + block_k];
-                int B_index = B_index_lut[block_col*K + block_k];
-                // printf("%x\n", A_index);
+                // A_index = A_index_lut[block_k*row + block_row];
+                // printf("A_index_lut[%x]: %x\n", block_k*row + block_row, A_index);
+                A_index = A_index_lut[block_row*K + block_k];
+                B_index = B_index_lut[block_col*K + block_k];
+                // printf("A_index_lut[%x]: %x\n", block_row*K + block_k, A_index);
 
                 C[block_col*row + block_row] +=  A[ A_index] * B[ B_index ];
                 // C[block_col*row + block_row] +=  A[ block_k*row + block_row ] * B[ A_index ];
